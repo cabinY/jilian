@@ -10,21 +10,19 @@
 </template>
 
 <script>
-    let arrData = [
-      {id: 1, parent_id: 0, name: '一级'},
-      {id: 2, parent_id: 0, name: '一级2'},
-      {id: 12, parent_id: 1, name: '二级1'},
-      {id: 13, parent_id: 1, name: '二级2'},
-      {id: 122, parent_id: 12, name: '三级1'},
-      {id: 133, parent_id: 13, name: '三级2'},
-      {id: 1335, parent_id: 133, name: '四级1'},
-      {id: 1336, parent_id: 133, name: '四级2'}
-    ]
     export default {
+        props: {
+          lists: {
+            type: Array,
+            default: () => []
+          },
+          curId: {
+            type: Number,
+            default: null
+          }
+        },
         data: function () {
           return {
-            lists: arrData,
-            curId: 1335,
             level:[],
             cataValue:[],
           }
@@ -37,35 +35,36 @@
         },
         methods: {
           selectChildren(_index) {
-            let childrenData = this._getChid(this.lists, this.cataValue[index].id)
+            this.level.splice(_index+1 , this.level.length)
+            let childrenData = this._getChid(this.lists, this.cataValue[_index].id)
             if(childrenData.length){
-              this.level.push(childrenData)
+              this.level[_index+1] = childrenData
             }
           },
           _set(id) {
             let cur = this.lists.filter(item => item.id === id)
-            let par = cur[0].parent_id
-            let t_l = []
-            let num = 0
-            function get(item, par){
-              if(item.id == par && num < 4){
-                let secPar = item.id;
-                num++;
-                get(item, secPar)
-              }  
-            }
-            this.lists.forEach((item, index) => {
-              get(item,par)
-            })
-            console.info(num)
+            this._getPar(cur[0])
           },
           _getChid(lists, id) {
-              return lists.filter(item => item.parent_id === id)
+            return lists.filter(item => item.parent_id === id)
+          },
+          _getPar(item) {
+            let t_l = []
+            this.level.unshift(this._getChid(this.lists, item.parent_id))
+            this.cataValue.unshift(item)
+            if(item.parent_id == 0) {
+              return
+            }
+            let next = this.lists.filter(list => list.id === item.parent_id)
+            this._getPar(next[0])
           }
         },
         mounted(){
-          this.level.push(this.root)
-          this._set(this.curId)
+          if(this.curId){
+            this._set(this.curId)
+          }else{
+            this.level.push(this.root)
+          }
         }
     }
 </script>
