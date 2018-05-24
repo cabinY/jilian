@@ -25,6 +25,7 @@
           return {
             level:[],
             cataValue:[],
+            newArr:[]
           }
         },
         computed:{
@@ -57,6 +58,14 @@
             }
             let next = this.lists.filter(list => list.id === item.parent_id)
             this._getPar(next[0])
+          },
+          parseData(lists, parent_id = 0, depth = 0) {
+            return lists.filter(list => list.parent_id == parent_id).map(item => {
+              item.id = item.id
+              item.depth = depth
+              item.children = this.parseData(lists, item.id, ++depth)
+              return item 
+            })
           }
         },
         mounted(){
